@@ -4,7 +4,7 @@
   "author": "merlin04",
   "license": "MIT",
   "scripts": {
-    "start": "dotenv -e .env esno index.ts"
+    "start": "FORCE_COLOR=3 dotenv -e .env esno index.ts"
   },
   "dependencies": {
     "chalk": "4.1.2",
