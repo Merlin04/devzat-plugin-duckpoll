@@ -45,7 +45,7 @@ ${poll.options.map((option, index) => {
 	const bar = `${'█'.repeat(Math.round(percent / 100 * 40))}${'░'.repeat(40 - Math.round(percent / 100 * 40))}`;
 	const voters = options[index].map(voter => "@" + voter).join(", ");
 	
-	return `${chalk.bold(`${index + 1}. ${option}`)} (${options[index].length} votes, ${chalk.bold(`${percent}%`)})
+	return `${chalk.bold(`${index}. ${option}`)} (${options[index].length} votes, ${chalk.bold(`${percent}%`)})
 
 ${voters}
 
@@ -187,27 +187,27 @@ plugin.command({
 	const [n, o] = event.args.split(" ").map(Number);
 	if(isNaN(n) || isNaN(o) || !polls[n]) return "Invalid poll ID";
 	const poll = polls[n];
-	if(!poll.options[o - 1]) return "Invalid option ID";
+	if(!poll.options[o]) return "Invalid option ID";
 
 	const existingVote = poll.votes.find(([user]) => user === event.from);
 	if(existingVote) {
-		if(existingVote[1].includes(o - 1)) {
+		if(existingVote[1].includes(o)) {
 			// Remove the vote
 			if(existingVote[1].length === 1) {
 				poll.votes.splice(poll.votes.indexOf(existingVote), 1);
 			} else {
-				existingVote[1].splice(existingVote[1].indexOf(o - 1), 1);
+				existingVote[1].splice(existingVote[1].indexOf(o), 1);
 			}
 
 			return `Removed vote for option ${chalk.bold.blue(o)}`!;
 		}
 		if(!poll.multiple) {
-			existingVote[1][0] = o - 1;
+			existingVote[1][0] = o;
 			return `Moved vote to option ${chalk.bold.blue(o)}`!;
 		}
-		existingVote[1].push(o - 1);
+		existingVote[1].push(o);
 	} else {
-		poll.votes.push([event.from, [o - 1]]);
+		poll.votes.push([event.from, [o]]);
 	}
 	return `Voted for option ${chalk.bold.blue(o)}`!;
 });
