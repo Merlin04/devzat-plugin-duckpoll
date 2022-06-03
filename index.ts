@@ -4,6 +4,7 @@ import fetch from "node-fetch";
 import chalk from "chalk";
 import "ts-replace-all";
 import { nanoid } from "nanoid";
+import fs from "fs/promises";
 
 if(!process.env.DEVZAT_TOKEN) throw new Error("DEVZAT_TOKEN environment variable is not defined");
 if(!process.env.DEVZAT_ADDRESS) throw new Error("DEVZAT_ADDRESS environment variable is not defined");
@@ -25,7 +26,17 @@ type Poll = {
 	author: string
 };
 
-const polls: Poll[] = [];
+let polls: Poll[] = [];
+
+setInterval(async () => {
+	// backup polls
+	await fs.writeFile("polls.json", JSON.stringify(polls));
+}, 60 * 1000);
+
+void async function() {
+	polls = JSON.parse((await fs.readFile("polls.json")).toString());
+	console.log(`Read ${polls.length} polls from save!`);
+}();
 
 const pollResults = (poll: Poll, index: number) => {
 	// get a list of the options with vote counts and voters
@@ -126,7 +137,7 @@ plugin.command({
 						break;
 					}
 					poll.options.push(mw.msg);
-					await r(`> Option ${chalk.bold.blue(poll.options.length)}: ${chalk.bold.blue(poll.options[poll.options.length - 1])}`);
+					await r(`> Option ${chalk.bold.blue(poll.options.length - 1)}: ${chalk.bold.blue(poll.options[poll.options.length - 1])}`);
 					break;
 				}
 			}
@@ -154,12 +165,16 @@ plugin.command({
 	return "Poll closed!";
 });
 
+
+const ZERO_WIDTH_SPACE = "​";
+
 plugin.command({
 	name: "lspolls",
 	info: `List all active ${name} polls`,
 	argsInfo: ""
 }, () => {
-	let pollsStr = polls.map((poll, index) => `${index}. @${poll.author}: ${chalk.bold.greenBright(`${poll.title}`)}`).join("\n");
+	// ZWS to fix the markdown bug in devzat
+	let pollsStr = polls.map((poll, index) => `${ZERO_WIDTH_SPACE}${index}. @${poll.author}: ${chalk.bold.greenBright(`${poll.title}`)}`).join("\n");
 	if(pollsStr === "") pollsStr = chalk.italic.dim("[there are no polls yet]");
 
 	return `Active polls:
